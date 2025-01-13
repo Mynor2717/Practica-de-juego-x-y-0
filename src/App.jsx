@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import confetti from 'canvas-confetti'
 import './App.css'
 
 const Turns = {
@@ -55,6 +56,17 @@ function App() {
     return null
   }
 
+  // Para reiniciar el juego solo hay que llevarlo a su estado inicial
+  const resetGame = () => {
+    setBoard(Array(9).fill(null))
+    setTurn(Turns.X)
+    setWinner(null)
+  }
+
+  const checkEndGame = (newBoard) => {
+    return newBoard.every((square) => square !== null)
+  }
+
   const updateBoard = (index) => {
     // no actualizamos esta posicion si ya tiene algo
     if(board[index] || winner) return
@@ -68,7 +80,10 @@ function App() {
 
     const newWinner =checkWinner(newBoard)
     if(newWinner) {
+      confetti()
       setWinner(newWinner)
+    }else if(checkEndGame(newBoard)) {
+      setWinner(false)
     }
   }
 
@@ -76,15 +91,16 @@ function App() {
     <>
       <div className="board">
         <h1>Tic tac toe</h1>
+        <button onClick={resetGame}>Reset Game</button>
         <section className='game'>
           {
-            board.map((_, index) => {
+            board.map((square, index) => {
               return (
                 <Square key={index}
                   index={index}
                   updateBoard={updateBoard}
                 >
-                  {board[index]}
+                  {square}
                 </Square>
               )
             })
@@ -95,6 +111,26 @@ function App() {
           <Square isSelected={turn === Turns.X}>{Turns.X}</Square>
           <Square isSelected={turn === Turns.O}>{Turns.O}</Square>
         </section>
+        {
+          winner !== null && (
+            <section className='winner'>
+              <div className="text">
+                <h2>
+                  {
+                    winner === false ? 'Empate' : 'Gano'
+                  }
+                </h2>
+                <header className='win'>
+                  {winner && <Square>{winner}</Square>}
+                </header>
+
+                <footer>
+                  <button onClick={resetGame}>Empezar de nuevo</button>
+                </footer>
+              </div>
+            </section>
+          )
+        }
       </div>
     </>
   )
