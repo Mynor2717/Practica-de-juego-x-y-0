@@ -1,44 +1,23 @@
 import { useState } from 'react'
 import confetti from 'canvas-confetti'
 import './App.css'
+import { Square } from './components/Square'
+import { Turns, WINNER_COMBOS } from './constants'
 
-const Turns = {
-  X: 'X',
-  O: 'O'
-}
-
-//Componente Hijo 
-
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? 'is-selected' : ''}`
-  const handleClick = () => {
-    updateBoard(index)
-  }
-  return (
-
-    <div onClick={handleClick} className={className}>
-      {children}
-    </div>
-  )
-}
-
-const WINNER_COMBOS = [
-  [0,1,2],
-  [3,4,5],
-  [6,7,8],
-  [0,3,6],
-  [1,2,7],
-  [2,5,8],
-  [0,4,8],
-  [2,4,6]
-]
 
 //Componente Padre 
 
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(null))
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem('board')
+    if(boardFromStorage) return JSON.parse(boardFromStorage)
+      return Array(9).fill(null)
+  })
 
-  const [turn, setTurn] = useState(Turns.O)
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem('turn')
+    return turnFromStorage ?? Turns.O  
+  })
 
   const [winner, setWinner] = useState(null)
 
@@ -61,6 +40,9 @@ function App() {
     setBoard(Array(9).fill(null))
     setTurn(Turns.X)
     setWinner(null)
+
+    window.localStorage.removeItem('board')
+    window.localStorage.removeItem('turn')
   }
 
   const checkEndGame = (newBoard) => {
@@ -74,6 +56,9 @@ function App() {
     const newBoard = [...board]
     newBoard[index] = turn
     setBoard(newBoard)
+    // guardar la partida
+    window.localStorage.setItem('board', JSON.stringify(newBoard))
+    window.localStorage.setItem('turn', newTurn)
     // Cambiamos el turno
     const newTurn = turn === Turns.X ? Turns.O : Turns.X
     setTurn(newTurn)
